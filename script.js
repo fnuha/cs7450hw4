@@ -384,6 +384,11 @@ d3.csv(GENRE_CSV, cleanGenreCSV).then(data => {
                 break;
 
             case 7:
+                info.transition(t)
+                    .text("(Work in progress!)");
+                info2.transition(t)
+                    .text("");
+
                 labels.transition(t).style("opacity", 0);
                 slices.transition(t).style("opacity", 0);
                 title.transition(t).style("opacity", 0);
