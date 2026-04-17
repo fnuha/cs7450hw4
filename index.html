@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HW4: Scrollytelling</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://unpkg.com/scrollama"></script>
+</head>
+<body>
+    <main>
+        <header id="intro">
+            <h1>manga demographics over time</h1>
+            <p id="desc">analyzing how manga has changed over the years!</p>
+            <img src="coverimage.jpg" alt="Cover Image" id="cover-image">
+            <p>Scroll down to begin...</p>
+        </header>
+
+        <section id="scrolly">
+            <div class="sticky">
+                <div id="chart"></div>
+            </div>
+            <article class="scroll">
+                <div class="step" data-step="0"></div>
+                <div class="step" data-step="1"></div>
+                <div class="step" data-step="2"></div>
+                <div class="step" data-step="3"></div>
+                <div class="step" data-step="4"></div>
+                <div class="step" data-step="5"></div>
+                <div class="step" data-step="6"></div>
+                <div class="step" data-step="7"></div>
+            </article>
+        </section>
+    </main>
+    <script src="script.js"></script>
+</body>
+</html>
