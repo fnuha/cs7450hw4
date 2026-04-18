@@ -197,7 +197,8 @@ d3.csv(GENRE_CSV, cleanGenreCSV).then(data => {
 
 
     const linegroup = svg.append("g")
-        .attr("transform", `translate(${width/8 * -1},${height / 2 * -1})`);
+        .attr("transform", `translate(${width/8 * -1},${height / 2 * -1})`)
+        .style("opacity", 0);
 
     let temp2 = d3.rollup(data, v=>d3.mean(v, (d) => d.score), d => d.fromyear);
 
@@ -206,22 +207,18 @@ d3.csv(GENRE_CSV, cleanGenreCSV).then(data => {
     lineData.sort((a,b) => a.key - b.key);
     minyear = (d3.min(lineData, d=>d.key));
     maxyear = (d3.max(lineData, d=>d.key));
-    console.log(minyear);
-    console.log(maxyear);
 
     const lineXScale = d3.scaleTime()
         .range([0, width/4])
         .domain([minyear, maxyear]);
 
-
     const lineYScale = d3.scaleLinear()
         .range([3*height/4, 1*height/4])
         .domain([d3.min(lineData, d => d.value) - 0.25, d3.max(lineData, d => d.value) + 0.25]);
 
-
     linegroup.append("text")
         .text("Average score of manga published per year over time")
-        .attr("transform", `translate(40, ${height / 4})`);
+        .attr("transform", `translate(0, ${height / 4 - 20})`);
 
     linegroup.append("path")
       .datum(lineData)
@@ -233,8 +230,6 @@ d3.csv(GENRE_CSV, cleanGenreCSV).then(data => {
             .y(d => lineYScale(d.value))
             );
     
-
-
     //https://www.geeksforgeeks.org/javascript/d3-js-axis-tickformat-function/
     linegroup.append("g")
         .attr("transform", "translate(0," + 3 * height/4 + ")")
@@ -243,37 +238,97 @@ d3.csv(GENRE_CSV, cleanGenreCSV).then(data => {
     linegroup.append("g")
         .call(d3.axisLeft(lineYScale).ticks(10));
 
-    let temp3 = d3.rollup(data, v=>d3.mean(v, (d) => d.score), d => d.fromyear);
+    linegroup.append("text")
+        .text("Year")
+        .style("font-size", "12px")
+        .attr("transform", `translate(${width/8}, ${4 * height / 5})`);
+    
+    linegroup.append("text")
+        .text("Average score")
+        .attr("transform", "rotate(90)")
+        .attr("x", height/2)
+        .attr("y", 40)
+        .style("font-size", "12px")
+        .attr("text-anchor", "start");
 
     bardata = new Map();
     categories.forEach((x) => {
-        bardata.set(x, d3.sum(data, d => d[x]));
+        num = 0;
+        value = 0;
+        data.forEach((y) =>
+        {      
+            if (y[x] == 1) {
+                num = num + 1;
+                value = value + y.score;
+            }
+        });
+        bardata.set(x, (value/num));
     });
 
-    console.log(bardata);
-
-    // svg.append("text")
-    //     .text("Month and Year")
-    //     .style("font-size", "18px")
-    //     .attr("x", width/2 - 20)
-    //     .attr("y", outerHeight - margin.bottom + 10);
-    
-    // svg.append("text")
-    //     .text("Temperature (degrees Farenheit)")
-    //     .attr("transform", "rotate(90)")
-    //     .attr("x", margin.top)
-    //     .attr("y", -10)
-    //     .style("font-size", "18px")
-    //     .attr("text-anchor", "start");
+    //https://www.geeksforgeeks.org/javascript/how-to-sort-a-map-in-javascript/
+    const newMap = Array.from(bardata).sort((a, b) => a[1] - b[1]);
+    sortedbardata = new Map(newMap);
 
     const bargroup = svg.append("g")
-        .attr("transform", `translate(${width/8 * -1},${height / 2 * -1})`);
+        .attr("transform", `translate(${width/8 * -1},${3 * height / 4 * -1})`)
+        .style("opacity", 0);
 
+    // make x scale using scaleband for discrete bands
+    const barXScale = d3.scaleBand()
+        .padding(0.4)
+        .domain(sortedbardata.keys())
+        .range([0, width/4]);
+
+    // linear scale for y scale
+    const barYScale = d3.scaleLinear()
+        .range([3*height/4, 1*height/4])
+        .domain([d3.min(sortedbardata, d => d[1]) - 0.25, d3.max(sortedbardata, d => d[1]) + 0.25]);
+
+    // make rectangles
+    const rects = bargroup.selectAll("rect")
+        .data(sortedbardata)
+        .join("rect")
+        .attr("x", d => barXScale(d[0]))
+        .attr("y", d => barYScale(d[1]) + (1*height/4))
+        .attr("width", barXScale.bandwidth())
+        .attr("height", d => ((3*height/4) - barYScale(d[1])))
+        .attr("transform", "translate(0, 0)")
+        .style("fill", "lightblue");
+
+    bargroup.append("text")
+        .text("Average score per genre")
+        .attr("x", width/16)
+        .attr("y", height/2);
+
+    // add x axis
+    bargroup.append("g")
+        .attr("transform", "translate(0," + height + ")")
+        .call(d3.axisBottom(barXScale).tickPadding(1))
+        .selectAll("text")
+        // https://stackoverflow.com/questions/21187329/d3-rotate-x-axis-labels axis label rotation
+        .attr("transform", "rotate(80)")
+        .attr("text-anchor", "start")
+        .attr("dx", "0.80em")
+        .attr("dy", "-.15em");
+    
+    bargroup.append("text")
+        .text("Average score")
+        .attr("transform", "rotate(90)")
+        .attr("x", 3*height/4)
+        .attr("y", 40)
+        .style("font-size", "12px")
+        .attr("text-anchor", "start");
+
+
+    bargroup.append("g")
+        .attr("transform", `translate(${0}, ${1*height/4})`)
+        .call(d3.axisLeft(barYScale).ticks(10));
 
     function handleStepEnter(response) {
         const t = d3.transition().duration(400).ease(d3.easeCubicInOut);
 
-        linegroup.transition(t).style("opacity", response.index === 7 ? 1 : 0);
+        bargroup.transition(t).style("opacity", response.index === 7 || response.index === 8 ? 1 : 0);
+        linegroup.transition(t).style("opacity", response.index === 9 ? 1 : 0);
 
 
         switch(response.index) {
@@ -459,20 +514,44 @@ d3.csv(GENRE_CSV, cleanGenreCSV).then(data => {
                     .text("");
 
                 slices.transition(t)
-                    slices.style("opacity", 1)
+                    .style("opacity", 1)
                     .attr('d', arcGenerator);
                 break;
-
+            
             case 7:
+                labels.transition(t).style("opacity", 0);
+                slices.transition(t).style("opacity", 0);
+                title.transition(t)
+                .text("")
+
+                info.transition(t)
+                    .text("As shown prior, romance, comedy, fantasy and action have tended to dominate when it comes");
+                info2.transition(t)
+                    .text("to new publications.");
+
+                rects.transition(t).style("fill", "lightblue");
+                break;
+
+
+            case 8:
+                const hightlightedgenres = ["romance", "comedy", "fantasy", "action"];
+                info.transition(t)
+                    .text("Despite that, they end up middling in terms of average score,");
+                info2.transition(t)
+                    .text("perhaps due to oversaturation of the genre.");
+
+                rects.transition(t).style("fill", function(d){return hightlightedgenres.includes(d[0]) ? "red" : "lightblue"});
+                break;
+
+            case 9:
                 info.transition(t)
                     .text("However, despite the increasing quantity of manga published each year, average ratings from");
                 info2.transition(t)
                     .text("readers in recent decades have improved and stabilized from the early days of manga!");
 
-                labels.transition(t).style("opacity", 0);
-                slices.transition(t).style("opacity", 0);
-                title.transition(t)
-                .text("")
+
+                break;
+
         }
     }
 
