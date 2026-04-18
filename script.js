@@ -14,6 +14,14 @@ function year(date) {
     return reformatted(dateObject);
 }
 
+function year2(date) {
+    const parser = d3.timeParse("%Y");
+    dateObject = parser(date);
+    const reformatted = d3.utcFormat("%x")
+
+    return reformatted(dateObject);
+}
+
 // plan: scroll pie charts to show change in demographic over time
 // line chart of scores over time
 // line plot 
@@ -187,14 +195,86 @@ d3.csv(GENRE_CSV, cleanGenreCSV).then(data => {
             .style("font-size", 10)
             .style("opacity", 0);
 
-    const bargroup = svg.append("g");
 
+    const linegroup = svg.append("g")
+        .attr("transform", `translate(${width/8 * -1},${height / 2 * -1})`);
+
+    let temp2 = d3.rollup(data, v=>d3.mean(v, (d) => d.score), d => d.fromyear);
+
+    const lineData = Array.from(temp2, ([key, value]) => ({key, value}));
+
+    lineData.sort((a,b) => a.key - b.key);
+    minyear = (d3.min(lineData, d=>d.key));
+    maxyear = (d3.max(lineData, d=>d.key));
+    console.log(minyear);
+    console.log(maxyear);
+
+    const lineXScale = d3.scaleTime()
+        .range([0, width/4])
+        .domain([minyear, maxyear]);
+
+
+    const lineYScale = d3.scaleLinear()
+        .range([3*height/4, 1*height/4])
+        .domain([d3.min(lineData, d => d.value) - 0.25, d3.max(lineData, d => d.value) + 0.25]);
+
+
+    linegroup.append("text")
+        .text("Average score of manga published per year over time")
+        .attr("transform", `translate(40, ${height / 4})`);
+
+    linegroup.append("path")
+      .datum(lineData)
+        .attr("fill", "none")
+        .attr("stroke", "steelblue")
+        .attr("stroke-width", 1.5)
+        .attr("d", d3.line()
+            .x(function(d) { return lineXScale(d.key) })
+            .y(d => lineYScale(d.value))
+            );
+    
+
+
+    //https://www.geeksforgeeks.org/javascript/d3-js-axis-tickformat-function/
+    linegroup.append("g")
+        .attr("transform", "translate(0," + 3 * height/4 + ")")
+        .call(d3.axisBottom(lineXScale).tickValues([1950,1960,1970,1980,1990,2000,2010,2020]).tickFormat((d,i) => [`1950`,`1960`,`1970`,`1980`,`1990`,`2000`,`2010`,`2020`][i]));
+ 
+    linegroup.append("g")
+        .call(d3.axisLeft(lineYScale).ticks(10));
+
+    let temp3 = d3.rollup(data, v=>d3.mean(v, (d) => d.score), d => d.fromyear);
+
+    bardata = new Map();
+    categories.forEach((x) => {
+        bardata.set(x, d3.sum(data, d => d[x]));
+    });
+
+    console.log(bardata);
+
+    // svg.append("text")
+    //     .text("Month and Year")
+    //     .style("font-size", "18px")
+    //     .attr("x", width/2 - 20)
+    //     .attr("y", outerHeight - margin.bottom + 10);
+    
+    // svg.append("text")
+    //     .text("Temperature (degrees Farenheit)")
+    //     .attr("transform", "rotate(90)")
+    //     .attr("x", margin.top)
+    //     .attr("y", -10)
+    //     .style("font-size", "18px")
+    //     .attr("text-anchor", "start");
+
+    const bargroup = svg.append("g")
+        .attr("transform", `translate(${width/8 * -1},${height / 2 * -1})`);
 
 
     function handleStepEnter(response) {
         const t = d3.transition().duration(400).ease(d3.easeCubicInOut);
 
-        console.log(response.index);
+        linegroup.transition(t).style("opacity", response.index === 7 ? 1 : 0);
+
 
         switch(response.index) {
 
@@ -208,6 +288,7 @@ d3.csv(GENRE_CSV, cleanGenreCSV).then(data => {
                 info2.transition(t)
                     .text("Let's take a look at the ways its makeup has changed over time.");
 
+                title.transition(t).text("")    
                 break;
 
             case 1:
@@ -240,7 +321,6 @@ d3.csv(GENRE_CSV, cleanGenreCSV).then(data => {
                     .text("In the year 1990, comedy, drama and action dominated the scene.");
                 info2.transition(t)
                     .text("This reflects the saturday-morning-cartoon origins of the genre.")
-
                 
                 break;
 
@@ -385,13 +465,14 @@ d3.csv(GENRE_CSV, cleanGenreCSV).then(data => {
 
             case 7:
                 info.transition(t)
-                    .text("(Work in progress!)");
+                    .text("However, despite the increasing quantity of manga published each year, average ratings from");
                 info2.transition(t)
-                    .text("");
+                    .text("readers in recent decades have improved and stabilized from the early days of manga!");
 
                 labels.transition(t).style("opacity", 0);
                 slices.transition(t).style("opacity", 0);
-                title.transition(t).style("opacity", 0);
+                title.transition(t)
+                .text("")
         }
     }
 
