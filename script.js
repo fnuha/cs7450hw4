@@ -27,6 +27,8 @@ function year2(date) {
 // line plot 
 // bar chart of newly published manga over time
 
+// cited much of HW2/3 code, along with scrollytelling lab code
+
 const cleanGenreCSV = d => {
     return {
         id: +d.id,
@@ -164,6 +166,10 @@ d3.csv(GENRE_CSV, cleanGenreCSV).then(data => {
     const info2 = svg.append("text")
         .attr("transform", `translate(${width * (- 0.6)}, 20)`)
         .text("Let's take a look at the ways its makeup has changed over time.");
+        
+    const info3 = svg.append("text")
+        .attr("transform", `translate(${width * (- 0.6)}, 40)`)
+        .text("");
 
     const title = svg.append("text")
         .attr("transform", `translate(${radius * -0.6}, ${radius * -1.5})`)
@@ -319,16 +325,78 @@ d3.csv(GENRE_CSV, cleanGenreCSV).then(data => {
         .style("font-size", "12px")
         .attr("text-anchor", "start");
 
-
     bargroup.append("g")
         .attr("transform", `translate(${0}, ${1*height/4})`)
         .call(d3.axisLeft(barYScale).ticks(10));
+
+    const scattergroup = svg.append("g")
+        .attr("transform", `translate(${width/8 * -1},${3 * height / 4 * -1})`)
+        .style("opacity", 0);
+
+    // add title
+    scattergroup.append("text")
+        .attr("x", width / 4)
+        .attr("y", 30) 
+        .text("Dew Point vs. Pressure with Relation to Weather")
+        .style("font-size", "18px")
+        .style("fill", "darkblue");
+
+    // y scale continuous
+    const scatterYScale = d3.scaleLinear()
+        .range([3*height/4, 1*height/4])
+        .domain([0.0, 10.0]);
+
+    // color scale ordinal for weather
+    const scatterColor = d3.scaleOrdinal()
+        .domain(["TRUE", "FALSE"])
+        .range(["green","lightgrey"]);
+
+    scatterdata = data.filter(function(d) {return d.publishing == "TRUE"})
+
+    // create points
+    scattergroup.selectAll("circle")
+        .data(scatterdata)
+        .join("circle")
+        .attr("cx", d => lineXScale(d.fromyear)) //scaling 
+        .attr("cy", d => scatterYScale(d.score) + height/4)
+        .attr("r", "4")
+        .style("fill", "lightblue")
+        // .style("fill", d => scatterColor(d.publishing))
+        .style("stroke", "black")
+        .style("stroke-weight", 0.2)
+        .style("opacity", 0.5);
+        // .style("opacity", function (d) {return d.publishing == "TRUE" ? 1 : 0.4});
+
+    
+    scattergroup.append("g")
+        .attr("transform", "translate(0," + height + ")")
+        .call(d3.axisBottom(lineXScale).tickValues([1950,1960,1970,1980,1990,2000,2010,2020]).tickFormat((d,i) => [`1950`,`1960`,`1970`,`1980`,`1990`,`2000`,`2010`,`2020`][i]));
+
+
+    scattergroup.append("g")
+        .attr("transform", `translate(0,${height/4})`)
+        .call(d3.axisLeft(scatterYScale).ticks(10));
+
+    scattergroup.append("text")
+        .text("Average score")
+        .attr("transform", "rotate(90)")
+        .attr("x", 3*height/4)
+        .attr("y", 40)
+        .style("font-size", "12px")
+        .attr("text-anchor", "start");
+
+    scattergroup.append("text")
+        .text("Score vs. publication year")
+        .attr("x", width/16)
+        .attr("y", height/2);
+
 
     function handleStepEnter(response) {
         const t = d3.transition().duration(400).ease(d3.easeCubicInOut);
 
         bargroup.transition(t).style("opacity", response.index === 7 || response.index === 8 ? 1 : 0);
         linegroup.transition(t).style("opacity", response.index === 9 ? 1 : 0);
+        scattergroup.transition(t).style("opacity", response.index === 10 ? 1 : 0);
 
 
         switch(response.index) {
@@ -521,8 +589,7 @@ d3.csv(GENRE_CSV, cleanGenreCSV).then(data => {
             case 7:
                 labels.transition(t).style("opacity", 0);
                 slices.transition(t).style("opacity", 0);
-                title.transition(t)
-                .text("")
+                title.transition(t).text("");
 
                 info.transition(t)
                     .text("As shown prior, romance, comedy, fantasy and action have tended to dominate when it comes");
@@ -548,10 +615,29 @@ d3.csv(GENRE_CSV, cleanGenreCSV).then(data => {
                     .text("However, despite the increasing quantity of manga published each year, average ratings from");
                 info2.transition(t)
                     .text("readers in recent decades have improved and stabilized from the early days of manga!");
-
+                info3.transition(t)
+                    .text("");
 
                 break;
 
+            case 10:
+                info.transition(t)
+                    .text("This stabilization may actually be because of the quantity of newly published manga, as recent");
+                info2.transition(t)
+                    .text("years show a larger range of scores amongst publications, which may have balanced fluctuations");
+                info3.transition(t)
+                    .text("in average scores per year overall.");
+
+                break;
+
+            case 11:
+                info.transition(t)
+                    .text("Despite it all, the larger range of scores indicates the overall growth of the manga industry,");
+                info2.transition(t)
+                    .text("as more manga authors are given greenlights to pursue their series and explore new ideas.");
+                info3.transition(t)
+                    .text("More diverse titles can only mean good things for a creative industry.");
+                break;
         }
     }
 
