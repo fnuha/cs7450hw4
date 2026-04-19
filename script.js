@@ -2,7 +2,7 @@ const scroller = scrollama();
 const width = window.innerWidth;
 const height = window.innerHeight;
 const padding = 6;
-const radius = 200;
+const radius = window.innerWidth / 8;
 
 const GENRE_CSV = "archive/manga_genre_combined.csv";
 
@@ -157,19 +157,20 @@ d3.csv(GENRE_CSV, cleanGenreCSV).then(data => {
         .innerRadius(0) 
         .outerRadius(radius);
 
-    const slicegroup = svg.append("g");
+    const slicegroup = svg.append("g")
+        .style("pointer-events", "none");
 
-    const info = svg.append("text")
-        .attr("transform", `translate(${width * (- 0.6)}, 0)`)
-        .text("Manga has spanned a large variety of genres across the decades, reflecting the tastes of readers at the time.");
+    // const info = svg.append("text")
+    //     .attr("transform", `translate(${width * (- 0.6)}, 0)`)
+    //     .text("Manga has spanned a large variety of genres across the decades, reflecting the tastes of readers at the time.");
 
-    const info2 = svg.append("text")
-        .attr("transform", `translate(${width * (- 0.6)}, 20)`)
-        .text("Let's take a look at the ways its makeup has changed over time.");
+    // const info2 = svg.append("text")
+    //     .attr("transform", `translate(${width * (- 0.6)}, 20)`)
+    //     .text("Let's take a look at the ways its makeup has changed over time.");
         
-    const info3 = svg.append("text")
-        .attr("transform", `translate(${width * (- 0.6)}, 40)`)
-        .text("");
+    // const info3 = svg.append("text")
+    //     .attr("transform", `translate(${width * (- 0.6)}, 40)`)
+    //     .text("");
 
     const title = svg.append("text")
         .attr("transform", `translate(${radius * -0.6}, ${radius * -1.5})`)
@@ -344,7 +345,7 @@ d3.csv(GENRE_CSV, cleanGenreCSV).then(data => {
     // y scale continuous
     const scatterYScale = d3.scaleLinear()
         .range([3*height/4, 1*height/4])
-        .domain([0.0, 10.0]);
+        .domain([5.0, 10.0]);
 
     // color scale ordinal for weather
     const scatterColor = d3.scaleOrdinal()
@@ -354,7 +355,7 @@ d3.csv(GENRE_CSV, cleanGenreCSV).then(data => {
     scatterdata = data.filter(function(d) {return d.publishing == "TRUE"})
 
     // create points
-    scattergroup.selectAll("circle")
+    const points = scattergroup.selectAll("circle")
         .data(scatterdata)
         .join("circle")
         .attr("cx", d => lineXScale(d.fromyear)) //scaling 
@@ -390,13 +391,90 @@ d3.csv(GENRE_CSV, cleanGenreCSV).then(data => {
         .attr("x", width/16)
         .attr("y", height/2);
 
+    // lab 7 interactivity
+    const tooltip = d3.select("body")
+        .append("div")
+        .attr("class", "tooltip");
+
+
+    slices
+        .on("mouseover", (event, d) => 
+        {
+            tooltip
+                .html(`<strong>${d.data[0]}</strong><br>New publications: ${d.data[1]}`)
+                .classed("visible", true);
+
+        })
+        .on("mousemove", (event) => 
+        {
+            const pad = 15;
+            tooltip
+                .style("left", (event.pageX + pad) + "px")
+                .style("top", (event.pageY + pad) + "px");
+        })
+
+        .on("mouseout", (event, d) => 
+        {
+            tooltip.classed("visible", false);
+        });
+
+    rects
+        .on("mouseover", (event, d) => 
+        {
+            tooltip
+                .html(`<strong>${d[0]}</strong><br>Average rating: ${d[1].toFixed(2)}`)
+                .classed("visible", true);
+
+        })
+        .on("mousemove", (event) => 
+        {
+            const pad = 15;
+            tooltip
+                .style("left", (event.pageX + pad) + "px")
+                .style("top", (event.pageY + pad) + "px");
+        })
+
+        .on("mouseout", (event, d) => 
+        {
+            tooltip.classed("visible", false);
+        });
+
+    points
+        .on("mouseover", (event, d) => 
+        {
+            tooltip
+                .html(`<strong>${d.title}</strong><br>Published in ${d.fromyear}<br>Rating: ${d.score}`)
+                .classed("visible", true);
+
+        })
+        .on("mousemove", (event) => 
+        {
+            const pad = 15;
+            tooltip
+                .style("left", (event.pageX + pad) + "px")
+                .style("top", (event.pageY + pad) + "px");
+        })
+
+        .on("mouseout", (event, d) => 
+        {
+            tooltip.classed("visible", false);
+        });
+    
+    
 
     function handleStepEnter(response) {
-        const t = d3.transition().duration(400).ease(d3.easeCubicInOut);
+        const t = d3.transition().duration(800).ease(d3.easeCubicInOut);
 
-        bargroup.transition(t).style("opacity", response.index === 7 || response.index === 8 ? 1 : 0);
-        linegroup.transition(t).style("opacity", response.index === 9 ? 1 : 0);
-        scattergroup.transition(t).style("opacity", response.index === 10 ? 1 : 0);
+    
+        bargroup.transition(t).style("opacity", response.index === 7 || response.index === 8 ? 1 : 0)
+            .style("pointer-events", response.index === 7 || response.index === 8 ? "all" : "none");
+        linegroup.transition(t).style("opacity", response.index === 9 ? 1 : 0)
+            .style("pointer-events", response.index === 9 ? "all" : "none");
+        scattergroup.transition(t).style("opacity", response.index === 10 ? 1 : 0)
+        .style("pointer-events", response.index === 10 ? "all" : "none");
+
+        slices.transition(t)
+            .style("pointer-events", response.index >= 1 && response.index <= 6 ? "all" : "none");
 
 
         switch(response.index) {
@@ -405,11 +483,6 @@ d3.csv(GENRE_CSV, cleanGenreCSV).then(data => {
                 slices.transition(t).style("opacity", 0);
                 labels.transition(t).style("opacity", 0);
                 title.transition(t).style("opacity", 0);
-
-                info.transition(t)
-                    .text("Manga has spanned a large variety of genres across the decades, reflecting the tastes of readers at the time.");
-                info2.transition(t)
-                    .text("Let's take a look at the ways its makeup has changed over time.");
 
                 title.transition(t).text("")    
                 break;
@@ -438,13 +511,7 @@ d3.csv(GENRE_CSV, cleanGenreCSV).then(data => {
                         rotate(${((d.startAngle + d.endAngle) / 2 * 180 / Math.PI - 90)})
                         ${(d.startAngle + d.endAngle) / 2 > Math.PI ? "rotate(180)" : ""}`;  
                     });
-;
 
-                info.transition(t)
-                    .text("In the year 1990, comedy, drama and action dominated the scene.");
-                info2.transition(t)
-                    .text("This reflects the saturday-morning-cartoon origins of the genre.")
-                
                 break;
 
             case 2:
@@ -461,7 +528,7 @@ d3.csv(GENRE_CSV, cleanGenreCSV).then(data => {
                     .text("manga genre distribution in 2000");
                 
                 labels.transition(t)
-                    .text(function(d){ return (d.data[1] == 0 ? "" : d.data[0] )})
+                    .text(function(d){ return (d.data[1] <= 2 ? "" : d.data[0] )})
                     .attr("transform", function(d) { 
                         return `
                         translate(${arcGenerator.centroid(d).map(function(x) {return x * 2.5})})
@@ -469,10 +536,6 @@ d3.csv(GENRE_CSV, cleanGenreCSV).then(data => {
                         ${(d.startAngle + d.endAngle) / 2 > Math.PI ? "rotate(180)" : ""}`;  
                     });
 
-                info.transition(t)
-                    .text("As the years progress, romance and drama both became more popular,");
-                info2.transition(t)
-                    .text("as did shoujo (manga targeted at young girls), reflecting a more diverse audience.");
                 break;
 
             case 3:
@@ -489,7 +552,7 @@ d3.csv(GENRE_CSV, cleanGenreCSV).then(data => {
                     .text("manga genre distribution in 2005");
                 
                 labels.transition(t)
-                    .text(function(d){ return (d.data[1] == 0 ? "" : d.data[0] )})
+                    .text(function(d){ return (d.data[1] <= 6 ? "" : d.data[0] )})
                     .attr("transform", function(d) { 
                         return `
                         translate(${arcGenerator.centroid(d).map(function(x) {return x * 2.5})})
@@ -507,7 +570,7 @@ d3.csv(GENRE_CSV, cleanGenreCSV).then(data => {
                     .data(pieData2010);
 
                 labels.transition(t)
-                    .text(function(d){ return (d.data[1] == 0 ? "" : d.data[0] )})
+                    .text(function(d){ return (d.data[1] <= 6 ? "" : d.data[0] )})
                     .attr("transform", function(d) { 
                         return `
                         translate(${arcGenerator.centroid(d).map(function(x) {return x * 2.5})})
@@ -517,11 +580,6 @@ d3.csv(GENRE_CSV, cleanGenreCSV).then(data => {
 
                 title.transition(t)
                     .text("manga genre distribution in 2010");
-                
-                info.transition(t)
-                    .text("As times shifted, LGBTQ romance genres such as");
-                info2.transition(t)
-                    .text("Boys' Love also became more popular.");
 
                 slices.transition(t)
                     .attr('d', arcGenerator);
@@ -535,7 +593,7 @@ d3.csv(GENRE_CSV, cleanGenreCSV).then(data => {
                     .data(pieData2015);
                 
                 labels.transition(t)
-                    .text(function(d){ return (d.data[1] == 0 ? "" : d.data[0] )})
+                    .text(function(d){ return (d.data[1] <= 6 ? "" : d.data[0] )})
                     .attr("transform", function(d) { 
                         return `
                         translate(${arcGenerator.centroid(d).map(function(x) {return x * 2.5})})
@@ -545,11 +603,6 @@ d3.csv(GENRE_CSV, cleanGenreCSV).then(data => {
 
                 title.transition(t)
                     .text("manga genre distribution in 2015");
-                
-                info.transition(t)
-                    .text("As of recent, fantasy has been growing...");
-                info2.transition(t)
-                    .text("");
 
                 slices.transition(t)
                     .attr('d', arcGenerator);
@@ -568,18 +621,13 @@ d3.csv(GENRE_CSV, cleanGenreCSV).then(data => {
                 
                 labels.transition(t)
                     .style("opacity", 1)
-                    .text(function(d){ return (d.data[1] == 0 ? "" : d.data[0] )})
+                    .text(function(d){ return (d.data[1] <= 4 ? "" : d.data[0] )})
                     .attr("transform", function(d) { 
                         return `
                         translate(${arcGenerator.centroid(d).map(function(x) {return x * 2.5})})
                         rotate(${((d.startAngle + d.endAngle) / 2 * 180 / Math.PI - 90)})
                         ${(d.startAngle + d.endAngle) / 2 > Math.PI ? "rotate(180)" : ""}`;  
                     });
-
-                info.transition(t)
-                    .text("... to become the most popular genre for newly published manga in 2020.");
-                info2.transition(t)
-                    .text("");
 
                 slices.transition(t)
                     .style("opacity", 1)
@@ -591,52 +639,26 @@ d3.csv(GENRE_CSV, cleanGenreCSV).then(data => {
                 slices.transition(t).style("opacity", 0);
                 title.transition(t).text("");
 
-                info.transition(t)
-                    .text("As shown prior, romance, comedy, fantasy and action have tended to dominate when it comes");
-                info2.transition(t)
-                    .text("to new publications.");
-
                 rects.transition(t).style("fill", "lightblue");
                 break;
 
 
             case 8:
                 const hightlightedgenres = ["romance", "comedy", "fantasy", "action"];
-                info.transition(t)
-                    .text("Despite that, they end up middling in terms of average score,");
-                info2.transition(t)
-                    .text("perhaps due to oversaturation of the genre.");
 
                 rects.transition(t).style("fill", function(d){return hightlightedgenres.includes(d[0]) ? "red" : "lightblue"});
                 break;
 
             case 9:
-                info.transition(t)
-                    .text("However, despite the increasing quantity of manga published each year, average ratings from");
-                info2.transition(t)
-                    .text("readers in recent decades have improved and stabilized from the early days of manga!");
-                info3.transition(t)
-                    .text("");
 
                 break;
 
             case 10:
-                info.transition(t)
-                    .text("This stabilization may actually be because of the quantity of newly published manga, as recent");
-                info2.transition(t)
-                    .text("years show a larger range of scores amongst publications, which may have balanced fluctuations");
-                info3.transition(t)
-                    .text("in average scores per year overall.");
 
                 break;
 
             case 11:
-                info.transition(t)
-                    .text("Despite it all, the larger range of scores indicates the overall growth of the manga industry,");
-                info2.transition(t)
-                    .text("as more manga authors are given greenlights to pursue their series and explore new ideas.");
-                info3.transition(t)
-                    .text("More diverse titles can only mean good things for a creative industry.");
+
                 break;
         }
     }
