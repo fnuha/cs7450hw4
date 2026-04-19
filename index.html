@@ -22,24 +22,36 @@
             </div>
             <article class="scroll">
                 <div class="step" data-step="0">
-                <p>Manga has spanned a large variety of genres across the decades, reflecting the tastes of readers.</p>
+                <p>Manga has spanned a large variety of genres across the decades, reflecting the tastes of readers and the times they were published in.</p>
                 <p>Let's take a look at the ways its makeup has changed over time.</p>
+                <p>Hover over charts to learn more about specific data points.</p>
                 </div>
                 <div class="step" data-step="1">
                     <p>In the year 1990, comedy, drama and action dominated the scene. This reflects the saturday-morning-cartoon origins of the genre, aimed more towards younger kids than adults.</p>
+                    <p>One notable example is <b>Yu Yu Hakusho</b>, a comedy, drama and action manga that began serialization in Shounen Jump (a manga magazine aimed towards young boys) in November 1990.</p>
+                    <img src="yuyuhakusho.jpg" alt="yu yu hakusho img">
                 </div>
                 <div class="step" data-step="2">
-                    <p>As the years progress, romance and drama both became more popular, as did shoujo (manga targeted at young girls), reflecting a more diverse audience.</p>
+                    <p>As the years progressed, romance and drama both became more popular, as did shoujo (manga targeted at young girls), reflecting a more diverse audience.</p>
+                    <p>A notable example of shoujo romance from this time is <b>Nana</b>, a romance drama shoujo originally published starting in May 2000.</p>
+                    <img src="nana.jpg" alt="nana img">
+                    
                 </div>
-                <div class="step" data-step="3"></div>
+                <div class="step" data-step="3">
+                    <p>Nana had undertones of same-sex romance, which precluded the trend of LGBTQ romance genres such as Boys' Love becoming more popular.</p>
+                    <p>Shoujo and romance continued to dominate throughout the early 2000s, and rom-coms combining the two top genres of romance and comedy were especially popular during this time.</p>
+                    <img src="nozakikun.jpg" alt="nozaki img">
+                    <p>A notable romcom from this era is <b>Gekkan Shoujo Nozaki-kun</b>, which started its publication in August of 2011.</p>
+                </div>
                 <div class="step" data-step="4">
-                    <p>As times shifted, LGBTQ romance genres such as Boys' Love also became more popular.</p>
                 </div>
                 <div class="step" data-step="5">
-                    <p>As of recent, fantasy has been growing...</p>
+                    <p>Fantasy started climbing the charts in 2015...</p>
                 </div>
                 <div class="step" data-step="6">
-                    <p>... to become the most popular genre for newly published manga in 2020.</p>
+                    <p>...replacing romance to become the most popular genre for newly published manga in 2020.</p>
+                    <img src="frieren.jpg" alt="frieren img">
+                    <p><b>Frieren</b> is the most famous example of a 2020 adventure manga, starting serialization in April of that year.</p>
                 </div>
                 <div class="step" data-step="7">
                     <p>As shown prior, romance, comedy, fantasy and action have tended to dominate when it comes to new publications.</p>
@@ -48,17 +60,26 @@
                     <p>Despite that, they end up middling in terms of average score, perhaps due to oversaturation of the genre.</p>
                 </div>
                 <div class="step" data-step="9">
-                    <p>However, despite the increasing quantity of manga published each year, average ratings from readers in recent decades have improved and stabilized from the early days of manga!</p>
+                    <p>However, average ratings from readers in recent decades have improved and stabilized from the early days of manga!</p>
                 </div>
                 <div class="step" data-step="10">
-                    <p>This stabilization may actually be because of the quantity of newly published manga, as recent years show a larger range of scores amongst publications, which may have balanced fluctuations in average scores per year overall.</p>
+                    <p>This may be due to the quantity of newly published manga creating a smoother average that hovers around 7.00, as early years have limited data due to ratings being taken from <b>MyAnimeList</b>, an online database launched in 2004. These ratings are all compiled by western English-speaking audiences as well, many of whom did not have access to early manga via official channels until the 1990s-2000s.</p>
+                    <p>Early fluctuations are due to legacy titles with ties to more modern titles having ratings from fans revisiting in retrospect. Those legacy titles are among the only to be ranked during their year of publication, weighting the average for that year heavily.</p>
+                    <p>For example, the deep valley in 1959 is due to the manga <b>Castle of Dawn</b>, penned by the famous manga author Osamu Tezuka, often considered the "Father of Manga". Castle of Dawn received only 6.38 from MyAnimeList users.</p>
+                    <p>Recency bias plays a role in the spike in 2023.</p>
                 </div>
                 <div class="step" data-step="11">
-                    <p>Despite it all, the larger range of scores indicates the overall growth of the manga industry, as more manga authors are given greenlights to pursue their series and explore new ideas. More diverse titles can only mean good things for a creative industry.</p>
+                    <p>Viewing a distribution of scores across publishing years supports this, as recent years show a larger range of scores amongst publications, which may have balanced fluctuations in average scores per year overall. In addition, more manga is recorded and rated post-2000, reflecting the increase in access to and discussion of manga by western audiences after 2000, along with user tendency to not record ratings in retrospect for older titles after MyAnimeList's launch.</p>
+                    <label>Show data (May cause lag):</label>
+                    <select id="select-scatterplot"></select>
+                </div>
+                <div class="step" data-step="12">
+                    <p>Despite fluctuations in data, the larger range of titles and stabilization of score indicates the overall growth of the manga industry in both the west and in general, as more manga authors are given greenlights to pursue their series and explore new ideas. More diverse titles and tastes can only mean good things for a creative industry.</p>
+                    <p>Data for this visualization was sourced from <a href="https://www.kaggle.com/datasets/joshjms/kawaii">Kaggle.</a></p>
                 </div>
             </article>
         </section>
-        <p>Data source from <a href="https://www.kaggle.com/datasets/joshjms/kawaii">Kaggle</a></p>
+
     </main>
     <script src="script.js"></script>
 </body>

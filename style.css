@@ -4,6 +4,7 @@ body {
     overflow-x: hidden;
     font-family: 'Helvetica Neue', sans-serif;
     text-align: center;
+    pointer-events: none;
 }
 
 #intro {
@@ -48,6 +49,7 @@ body {
 
 #scrolly {
     position: relative;
+    pointer-events:none;
 }
 
 .sticky {
@@ -58,6 +60,12 @@ body {
     z-index: 0;
     overflow: hidden;
     background-color: #ffffff;
+    pointer-events: none;
+}
+
+#select-scatterplot {
+    pointer-events: all;
+    
 }
 
 #chart {
@@ -73,16 +81,22 @@ body {
 }
 
 .step {
-    margin: 0 auto 80vh auto;
+    /* margin: 0 auto 80vh auto; */
     height: 100vh; 
     background: transparent;
     pointer-events: none;
+    margin: 10% 50% 10% 10%;
+    align: center;
 
 }
 .step p {
-    width:30%;
+    /* width:30%; */
     text-align: left; 
-    margin: 10% 50% 10% 10%;
+    pointer-events: none;
+    /* margin: 10% 50% 10% 10%; */
+}
+.step img {
+    width: 80%;
 }
 .tooltip 
 {
@@ -104,3 +118,4 @@ body {
 {
     opacity: 1;
 }
+

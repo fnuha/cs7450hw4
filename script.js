@@ -14,14 +14,6 @@ function year(date) {
     return reformatted(dateObject);
 }
 
-function year2(date) {
-    const parser = d3.timeParse("%Y");
-    dateObject = parser(date);
-    const reformatted = d3.utcFormat("%x")
-
-    return reformatted(dateObject);
-}
-
 // plan: scroll pie charts to show change in demographic over time
 // line chart of scores over time
 // line plot 
@@ -43,20 +35,20 @@ const cleanGenreCSV = d => {
         adventure: +d.Adventure,
         avantgarde: +d.Avant_Garde,
         awardwinning: +d.Award_Winning,
-        bl: +d.Boys_Love,
+        boyslove: +d.Boys_Love,
         comedy: +d.Comedy,
         drama: +d.Drama,
         fantasy: +d.Fantasy,
-        gl: +d.Girls_Love,
+        girlslove: +d.Girls_Love,
         gourmet: +d.Gourmet,
         horror: +d.Horror,
         mystery: +d.Mystery,
         romance: +d.Romance,
         scifi: +d.Sci_Fi,
-        sol: +d.Slice_of_Life,
+        sliceoflife: +d.Slice_of_Life,
         sports: +d.Sports,
-        spn: +d.Supernatural,
-        sus: +d.Suspense,
+        supernatural: +d.Supernatural,
+        suspense: +d.Suspense,
         josei: +d.Josei,
         kids: +d.Kids,
         seinen: +d.Seinen,
@@ -70,20 +62,20 @@ const categories = ["action",
         "adventure", 
         "avantgarde",
         "awardwinning",
-        "bl",
+        "boyslove",
         "comedy",
         "drama",
         "fantasy",
-        "gl",
+        "girlslove",
         "gourmet",
         "horror",
         "mystery",
         "romance",
         "scifi",
-        "sol",
+        "sliceoflife",
         "sports",
-        "spn",
-        "sus",
+        "supernatural",
+        "suspense",
         "josei",
         "kids",
         "seinen",
@@ -138,7 +130,7 @@ d3.csv(GENRE_CSV, cleanGenreCSV).then(data => {
     // Create a color scale for the pie chart
     const pieColor = d3.scaleOrdinal()
         .domain(Object.keys(group1990))
-        .range(d3.schemeSet2);
+        .range(d3.schemePaired);
 
     // Create the pie chart visualization mapping our data values to the pie chart
     const pie = d3.pie()
@@ -258,6 +250,15 @@ d3.csv(GENRE_CSV, cleanGenreCSV).then(data => {
         .style("font-size", "12px")
         .attr("text-anchor", "start");
 
+    linecircled = linegroup.append("circle")
+        .attr("cx", d => lineXScale("1959"))
+        .attr("cy", d => lineYScale("6.3"))
+        .attr("r", "20")
+        .style("fill", "transparent")
+        .style("stroke", "red")
+        .style("stroke-width", 5)
+        .style("opacity", 0);
+
     bardata = new Map();
     categories.forEach((x) => {
         num = 0;
@@ -334,14 +335,6 @@ d3.csv(GENRE_CSV, cleanGenreCSV).then(data => {
         .attr("transform", `translate(${width/8 * -1},${3 * height / 4 * -1})`)
         .style("opacity", 0);
 
-    // add title
-    scattergroup.append("text")
-        .attr("x", width / 4)
-        .attr("y", 30) 
-        .text("Dew Point vs. Pressure with Relation to Weather")
-        .style("font-size", "18px")
-        .style("fill", "darkblue");
-
     // y scale continuous
     const scatterYScale = d3.scaleLinear()
         .range([3*height/4, 1*height/4])
@@ -352,11 +345,9 @@ d3.csv(GENRE_CSV, cleanGenreCSV).then(data => {
         .domain(["TRUE", "FALSE"])
         .range(["green","lightgrey"]);
 
-    scatterdata = data.filter(function(d) {return d.publishing == "TRUE"})
-
     // create points
     const points = scattergroup.selectAll("circle")
-        .data(scatterdata)
+        .data(data)
         .join("circle")
         .attr("cx", d => lineXScale(d.fromyear)) //scaling 
         .attr("cy", d => scatterYScale(d.score) + height/4)
@@ -365,8 +356,8 @@ d3.csv(GENRE_CSV, cleanGenreCSV).then(data => {
         // .style("fill", d => scatterColor(d.publishing))
         .style("stroke", "black")
         .style("stroke-weight", 0.2)
-        .style("opacity", 0.5);
-        // .style("opacity", function (d) {return d.publishing == "TRUE" ? 1 : 0.4});
+        .style("opacity", 0.5)
+        .style("opacity", function (d) {return d.publishing == "TRUE" ? 1 : 0.0});
 
     
     scattergroup.append("g")
@@ -374,7 +365,7 @@ d3.csv(GENRE_CSV, cleanGenreCSV).then(data => {
         .call(d3.axisBottom(lineXScale).tickValues([1950,1960,1970,1980,1990,2000,2010,2020]).tickFormat((d,i) => [`1950`,`1960`,`1970`,`1980`,`1990`,`2000`,`2010`,`2020`][i]));
 
 
-    scattergroup.append("g")
+    const scatterYScaleDrawn = scattergroup.append("g")
         .attr("transform", `translate(0,${height/4})`)
         .call(d3.axisLeft(scatterYScale).ticks(10));
 
@@ -460,20 +451,82 @@ d3.csv(GENRE_CSV, cleanGenreCSV).then(data => {
             tooltip.classed("visible", false);
         });
     
+        const selectoptions = ["current", "all"];
+        const selectlabels = ["Currently Serialized titles", "All titles"];
+        currentSelection = "current";
+        
+         // Select all of the dropdown menus and get the values
+        const selector = d3.select("#select-scatterplot");
+        
+        selector
+            .selectAll("option")
+            .data(selectoptions)
+            .enter()
+            .append("option")
+            .text((d,i) => selectlabels[i])
+            .property("selected", d => d === currentSelection)
+            .attr("value", d=>d);
+
+        selector
+        .on("change", (e) => { 
+            // Get the new axis label and update the scatterplot
+            currentSelection = e.target.value;
+            updateScatterplot(); 
+        
+            });
+
+
+    function updateScatterplot() {
+
+        if (currentSelection == "all") {
+        scatterYScale
+            .domain([0.0,10.0])
+            
+        // create points
+        points
+            .transition().duration(2000)
+            // .attr("cx", d => lineXScale(d.fromyear)) //scaling 
+            .attr("cy", d => scatterYScale(d.score) + height/4)
+            .style("fill", d => scatterColor(d.publishing))
+            .style("opacity", function (d) {return d.publishing == "TRUE" ? 1 : 0.4});
+
+        }
+        
+        else if (currentSelection == "current") {
+            scatterYScale
+            .domain([5.0,10.0])
+            
+        // create points
+        points
+            .transition().duration(2000)
+            // .attr("cx", d => lineXScale(d.fromyear)) //scaling 
+            .attr("cy", d => scatterYScale(d.score) + height/4)
+            .style("fill", "lightblue")
+            .style("opacity", function (d) {return d.publishing == "TRUE" ? 1 : 0.0});
+
+        }
+        
+        scatterYScaleDrawn
+            .transition().duration(2000).call(d3.axisLeft(scatterYScale).ticks(10));
+
+    }
     
 
     function handleStepEnter(response) {
-        const t = d3.transition().duration(800).ease(d3.easeCubicInOut);
+        const t = d3.transition().duration(400).ease(d3.easeCubicInOut);
 
     
         bargroup.transition(t).style("opacity", response.index === 7 || response.index === 8 ? 1 : 0)
             .style("pointer-events", response.index === 7 || response.index === 8 ? "all" : "none");
-        linegroup.transition(t).style("opacity", response.index === 9 ? 1 : 0)
-            .style("pointer-events", response.index === 9 ? "all" : "none");
-        scattergroup.transition(t).style("opacity", response.index === 10 ? 1 : 0)
-        .style("pointer-events", response.index === 10 ? "all" : "none");
+        linegroup.transition(t).style("opacity", response.index === 9 || response.index === 10 ? 1 : 0)
+            .style("pointer-events", response.index === 9 || response.index === 10 ? "all" : "none");
+        scattergroup.transition(t).style("opacity", response.index === 11 ? 1 : 0)
+        .style("pointer-events", response.index === 11 ? "all" : "none");
+
+        linecircled.transition(t).style("opacity", response.index === 10 ? 1 : 0);
 
         slices.transition(t)
+            .style("opacity", response.index >= 1 && response.index <= 6 ? 1 : 0)
             .style("pointer-events", response.index >= 1 && response.index <= 6 ? "all" : "none");
 
 
@@ -491,8 +544,9 @@ d3.csv(GENRE_CSV, cleanGenreCSV).then(data => {
                 slices
                     .data(pieData1990);
 
+                hightlightedgenres = ["comedy", "action", "drama"];
                 slices.transition(t)
-                    .style("opacity", 1)
+                    .style("opacity", function(d){return hightlightedgenres.includes(d.data[0]) ? 1 : 0.4})
                     .attr('d', arcGenerator);
 
                 labels
@@ -518,7 +572,9 @@ d3.csv(GENRE_CSV, cleanGenreCSV).then(data => {
                 slices
                     .data(pieData2000);
 
+                hightlightedgenres = ["romance", "drama", "shoujo"];
                 slices.transition(t)
+                    .style("opacity", function(d){return hightlightedgenres.includes(d.data[0]) ? 1 : 0.4})
                     .attr('d', arcGenerator);
                 
                 labels
@@ -542,7 +598,10 @@ d3.csv(GENRE_CSV, cleanGenreCSV).then(data => {
                 slices
                     .data(pieData2005);
 
+                hightlightedgenres = ["romance", "comedy"];
+
                 slices.transition(t)
+                    .style("opacity", function(d){return hightlightedgenres.includes(d.data[0]) ? 1 : 0.4})
                     .attr('d', arcGenerator);
 
                 labels
@@ -581,7 +640,10 @@ d3.csv(GENRE_CSV, cleanGenreCSV).then(data => {
                 title.transition(t)
                     .text("manga genre distribution in 2010");
 
+                hightlightedgenres = ["romance", "comedy"];
+
                 slices.transition(t)
+                    .style("opacity", function(d){return hightlightedgenres.includes(d.data[0]) ? 1 : 0.4})
                     .attr('d', arcGenerator);
                 break;
 
@@ -604,7 +666,9 @@ d3.csv(GENRE_CSV, cleanGenreCSV).then(data => {
                 title.transition(t)
                     .text("manga genre distribution in 2015");
 
+                hightlightedgenres = ["fantasy"];
                 slices.transition(t)
+                    .style("opacity", function(d){return hightlightedgenres.includes(d.data[0]) ? 1 : 0.4})
                     .attr('d', arcGenerator);
                 break;
 
@@ -629,8 +693,9 @@ d3.csv(GENRE_CSV, cleanGenreCSV).then(data => {
                         ${(d.startAngle + d.endAngle) / 2 > Math.PI ? "rotate(180)" : ""}`;  
                     });
 
+                hightlightedgenres = ["fantasy"];
                 slices.transition(t)
-                    .style("opacity", 1)
+                    .style("opacity", function(d){return hightlightedgenres.includes(d.data[0]) ? 1 : 0.4})
                     .attr('d', arcGenerator);
                 break;
             
@@ -644,7 +709,7 @@ d3.csv(GENRE_CSV, cleanGenreCSV).then(data => {
 
 
             case 8:
-                const hightlightedgenres = ["romance", "comedy", "fantasy", "action"];
+                hightlightedgenres = ["romance", "comedy", "fantasy", "action"];
 
                 rects.transition(t).style("fill", function(d){return hightlightedgenres.includes(d[0]) ? "red" : "lightblue"});
                 break;
@@ -658,6 +723,10 @@ d3.csv(GENRE_CSV, cleanGenreCSV).then(data => {
                 break;
 
             case 11:
+
+                break;
+
+            case 12:
 
                 break;
         }
