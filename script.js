@@ -179,7 +179,7 @@ d3.csv(GENRE_CSV, cleanGenreCSV).then(data => {
         .style("stroke-width", "1px")
         .style("opacity", 0);
     
-    const labels = svg.selectAll('mySlices')
+    const labels = slicegroup.selectAll('mySlices')
         .data(pieData1990)
         .enter()
             .append('text')
@@ -525,17 +525,19 @@ d3.csv(GENRE_CSV, cleanGenreCSV).then(data => {
 
         linecircled.transition(t).style("opacity", response.index === 10 ? 1 : 0);
 
-        slices.transition(t)
+        slicegroup.transition(t)
             .style("opacity", response.index >= 1 && response.index <= 6 ? 1 : 0)
             .style("pointer-events", response.index >= 1 && response.index <= 6 ? "all" : "none");
+
+        title.transition(t)
+            .style("opacity", response.index >= 1 && response.index <= 6 ? 1 : 0);
+        labels.transition(t)
+            .style("opacity", response.index >= 1 && response.index <= 6 ? 1 : 0);
 
 
         switch(response.index) {
 
             case 0:
-                slices.transition(t).style("opacity", 0);
-                labels.transition(t).style("opacity", 0);
-                title.transition(t).style("opacity", 0);
 
                 title.transition(t).text("")    
                 break;
@@ -558,7 +560,7 @@ d3.csv(GENRE_CSV, cleanGenreCSV).then(data => {
 
                 labels.transition(t)
                     .style("opacity", 1)
-                    .text(function(d){ return (d.data[1] == 0 ? "" : d.data[0] )})
+                    .text(function(d){ return (d.data[1] <= 1 ? "" : d.data[0] )})
                     .attr("transform", function(d) { 
                         return `
                         translate(${arcGenerator.centroid(d).map(function(x) {return x * 2.5})})
@@ -584,7 +586,7 @@ d3.csv(GENRE_CSV, cleanGenreCSV).then(data => {
                     .text("manga genre distribution in 2000");
                 
                 labels.transition(t)
-                    .text(function(d){ return (d.data[1] <= 2 ? "" : d.data[0] )})
+                    .text(function(d){ return (d.data[1] <= 3 ? "" : d.data[0] )})
                     .attr("transform", function(d) { 
                         return `
                         translate(${arcGenerator.centroid(d).map(function(x) {return x * 2.5})})
@@ -611,7 +613,7 @@ d3.csv(GENRE_CSV, cleanGenreCSV).then(data => {
                     .text("manga genre distribution in 2005");
                 
                 labels.transition(t)
-                    .text(function(d){ return (d.data[1] <= 6 ? "" : d.data[0] )})
+                    .text(function(d){ return (d.data[1] <= 11 ? "" : d.data[0] )})
                     .attr("transform", function(d) { 
                         return `
                         translate(${arcGenerator.centroid(d).map(function(x) {return x * 2.5})})
@@ -629,7 +631,7 @@ d3.csv(GENRE_CSV, cleanGenreCSV).then(data => {
                     .data(pieData2010);
 
                 labels.transition(t)
-                    .text(function(d){ return (d.data[1] <= 6 ? "" : d.data[0] )})
+                    .text(function(d){ return (d.data[1] <= 10 ? "" : d.data[0] )})
                     .attr("transform", function(d) { 
                         return `
                         translate(${arcGenerator.centroid(d).map(function(x) {return x * 2.5})})
@@ -655,7 +657,7 @@ d3.csv(GENRE_CSV, cleanGenreCSV).then(data => {
                     .data(pieData2015);
                 
                 labels.transition(t)
-                    .text(function(d){ return (d.data[1] <= 6 ? "" : d.data[0] )})
+                    .text(function(d){ return (d.data[1] <= 10 ? "" : d.data[0] )})
                     .attr("transform", function(d) { 
                         return `
                         translate(${arcGenerator.centroid(d).map(function(x) {return x * 2.5})})
@@ -685,7 +687,7 @@ d3.csv(GENRE_CSV, cleanGenreCSV).then(data => {
                 
                 labels.transition(t)
                     .style("opacity", 1)
-                    .text(function(d){ return (d.data[1] <= 4 ? "" : d.data[0] )})
+                    .text(function(d){ return (d.data[1] <= 10 ? "" : d.data[0] )})
                     .attr("transform", function(d) { 
                         return `
                         translate(${arcGenerator.centroid(d).map(function(x) {return x * 2.5})})

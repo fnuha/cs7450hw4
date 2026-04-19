@@ -96,7 +96,8 @@ body {
     /* margin: 10% 50% 10% 10%; */
 }
 .step img {
-    width: 80%;
+    width: 75%;
+    /* height: 80%; */
 }
 .tooltip 
 {
